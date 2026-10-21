@@ -1,0 +1,19 @@
+# Render Blueprint: Dashboard Render → New → Blueprint → pilih repo ini.
+services:
+  - type: web
+    name: bayarterus
+    runtime: docker
+    # Disk kekal memerlukan plan berbayar (Starter). Pelan percuma tiada disk,
+    # jadi semua akaun & transaksi akan hilang setiap kali server restart.
+    plan: starter
+    region: singapore
+    healthCheckPath: /healthz
+    envVars:
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DB_PATH
+        value: /app/data/bayarterus.db
+    disk:
+      name: bayarterus-data
+      mountPath: /app/data
+      sizeGB: 1

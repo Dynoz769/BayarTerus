@@ -28,6 +28,11 @@ export function createApp(db) {
 
   app.use(express.json({ limit: '100kb' }));
 
+  app.get('/healthz', (_req, res) => {
+    db.prepare('SELECT 1').get();
+    res.json({ ok: true });
+  });
+
   app.use('/v1', apiRouter(db));
   app.use('/checkout/api', checkoutRouter(db));
   app.use('/dashboard/api', dashboardRouter(db));

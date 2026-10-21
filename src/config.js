@@ -1,9 +1,17 @@
 const port = Number(process.env.PORT) || 3000;
 
+// URL awam: BASE_URL jika ditetapkan, jika tidak dikesan daripada platform hosting.
+function detectBaseUrl() {
+  if (process.env.BASE_URL) return process.env.BASE_URL;
+  if (process.env.RENDER_EXTERNAL_URL) return process.env.RENDER_EXTERNAL_URL;
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  return `http://localhost:${port}`;
+}
+
 export const config = {
   port,
   // URL awam gateway. Digunakan dalam snippet embed, checkout_url dan pautan bayaran.
-  baseUrl: (process.env.BASE_URL || `http://localhost:${port}`).replace(/\/$/, ''),
+  baseUrl: detectBaseUrl().replace(/\/$/, ''),
   dbPath: process.env.DB_PATH || 'data/bayarterus.db',
   currency: 'MYR',
 

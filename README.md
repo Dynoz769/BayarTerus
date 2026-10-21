@@ -53,7 +53,9 @@ npm test           # ujian API hujung-ke-hujung
 | Pautan bayaran | `/l/:link_id` |
 | Resit | `/receipt/:payment_id` |
 
-Konfigurasi melalui pembolehubah persekitaran, lihat [`.env.example`](.env.example). Untuk produksi, tetapkan `BASE_URL` kepada domain HTTPS anda.
+Konfigurasi melalui pembolehubah persekitaran, lihat [`.env.example`](.env.example).
+
+**Deploy ke internet** (Railway, Render atau VPS): lihat [DEPLOY.md](DEPLOY.md). GitHub Pages tidak boleh menjalankan server ini.
 
 ## Cara merchant guna
 
