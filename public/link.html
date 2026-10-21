@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pautan Bayaran — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    body { background: #eef1f4; }
+    .wrap { max-width: 440px; margin: 40px auto; padding: 0 12px; }
+    .head { background: var(--brand); color: #fff; padding: 22px; border-radius: 14px 14px 0 0; }
+    .body { background: #fff; padding: 22px; border-radius: 0 0 14px 14px; box-shadow: var(--shadow); }
+    .price { font-size: 1.8rem; font-weight: 800; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div id="merchant" style="font-weight:600;opacity:.9">Memuatkan…</div>
+      <h1 id="title" style="margin:6px 0 0"></h1>
+      <div class="price" id="price"></div>
+    </div>
+    <div class="body">
+      <div id="error" class="alert error hidden"></div>
+      <p id="desc" class="muted" style="white-space:pre-line"></p>
+      <div id="testbar" class="alert warn hidden">Mod ujian — tiada caj sebenar.</div>
+      <form id="form" class="hidden">
+        <div class="field hidden" id="amountField">
+          <label for="amount">Amaun (RM)</label>
+          <input id="amount" name="amount" inputmode="decimal" placeholder="10.00">
+          <div class="hint" id="minHint"></div>
+        </div>
+        <div class="field"><label for="name">Nama</label><input id="name" name="name" autocomplete="name"></div>
+        <div class="field"><label for="email">Emel</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="phone">No. telefon (pilihan)</label><input id="phone" name="phone" autocomplete="tel"></div>
+        <button class="btn block" id="btn">Teruskan ke pembayaran</button>
+      </form>
+    </div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script>
+    (function () {
+      const id = location.pathname.split('/').pop();
+      const $ = (s) => document.querySelector(s);
+      const err = (m) => { $('#error').textContent = m; $('#error').classList.toggle('hidden', !m); };
+      BT.api(`/checkout/api/links/${id}`).then((l) => {
+        document.documentElement.style.setProperty('--brand', l.merchant.brand_color);
+        $('#merchant').textContent = l.merchant.name;
+        $('#title').textContent = l.title;
+        document.title = `${l.title} — ${l.merchant.name}`;
+        $('#desc').textContent = l.description || '';
+        $('#price').textContent = l.customer_chooses_amount ? 'Anda tentukan amaun' : BT.money(l.amount);
+        $('#testbar').classList.toggle('hidden', l.livemode);
+        if (!l.active) return err('Pautan bayaran ini tidak lagi aktif.');
+        if (l.customer_chooses_amount) {
+          $('#amountField').classList.remove('hidden');
+          $('#amount').required = true;
+          $('#minHint').textContent = `Minimum ${BT.money(l.min_amount)}`;
+        }
+        $('#form').classList.remove('hidden');
+      }).catch((e) => { $('#merchant').textContent = 'BayarTerus'; err(e.message); });
+
+      $('#form').onsubmit = async (e) => {
+        e.preventDefault();
+        err('');
+        $('#btn').disabled = true;
+        try {
+          const out = await BT.api(`/checkout/api/links/${id}`, { method: 'POST', body: BT.formData(e.target) });
+          location.href = out.checkout_url;
+        } catch (x) {
+          err(x.message);
+          $('#btn').disabled = false;
+        }
+      };
+    })();
+  </script>
+</body>
+</html>

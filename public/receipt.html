@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resit — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .r { max-width: 520px; margin: 40px auto; padding: 0 12px; }
+    .total { font-size: 1.8rem; font-weight: 800; }
+    @media print { .noprint { display: none; } body { background: #fff; } .card { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="r">
+    <div class="card" id="card">
+      <div id="error" class="alert error hidden"></div>
+      <div id="content" class="hidden">
+        <div class="row"><h2 id="merchant" style="margin:0"></h2><span class="spacer"></span><span id="status"></span></div>
+        <p class="muted small" id="support"></p>
+        <div class="muted small">Jumlah dibayar</div>
+        <div class="total" id="amount"></div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+        <dl class="kv">
+          <dt>No. resit</dt><dd class="mono" id="id"></dd>
+          <dt>Tarikh</dt><dd id="date"></dd>
+          <dt>Keterangan</dt><dd id="desc"></dd>
+          <dt>Rujukan</dt><dd id="ref"></dd>
+          <dt>Kaedah</dt><dd id="method"></dd>
+          <dt>Pelanggan</dt><dd id="cust"></dd>
+        </dl>
+        <div class="row noprint" style="margin-top:20px"><button class="btn secondary" onclick="print()">Cetak / Simpan PDF</button></div>
+      </div>
+    </div>
+    <p class="muted small" style="text-align:center;margin-top:14px">Diproses oleh BayarTerus</p>
+  </div>
+  <script src="/js/common.js"></script>
+  <script>
+    (function () {
+      const id = location.pathname.split('/').pop();
+      const $ = (s) => document.querySelector(s);
+      BT.api(`/checkout/api/payments/${id}`).then((p) => {
+        if (!['succeeded', 'refunded', 'partially_refunded'].includes(p.status)) throw new Error('Resit hanya tersedia untuk bayaran yang berjaya.');
+        $('#merchant').textContent = p.merchant.name;
+        $('#support').textContent = [p.merchant.support_email, p.merchant.website].filter(Boolean).join(' · ');
+        $('#status').innerHTML = BT.badge(p.status) + (p.livemode ? '' : ' <span class="badge test">UJIAN</span>');
+        $('#amount').textContent = BT.money(p.amount);
+        $('#id').textContent = p.id;
+        $('#date').textContent = BT.date(p.paid_at);
+        $('#desc').textContent = p.description || '—';
+        $('#ref').textContent = p.reference || '—';
+        $('#method').textContent = p.payment_method ? `${BT.METHOD[p.payment_method.type]} — ${p.payment_method.detail}` : '—';
+        $('#cust').textContent = [p.customer_name, p.customer_email].filter(Boolean).join(' · ') || '—';
+        $('#content').classList.remove('hidden');
+      }).catch((e) => { $('#error').textContent = e.message; $('#error').classList.remove('hidden'); });
+    })();
+  </script>
+</body>
+</html>

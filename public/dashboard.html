@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+    .side { background: var(--surface); border-right: 1px solid var(--border); padding: 18px 12px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .side .logo { padding: 0 8px 18px; }
+    .side a.nav { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; margin-bottom: 2px; }
+    .side a.nav:hover { background: #f3f4f6; }
+    .side a.nav.active { background: var(--brand-soft); color: var(--brand-dark); font-weight: 600; }
+    .main { padding: 0 28px 40px; min-width: 0; }
+    .topbar { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; }
+    .mode { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .mode button { border: 0; background: #fff; padding: 6px 14px; font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--muted); }
+    .mode button.on.test { background: var(--warn-soft); color: var(--warn); }
+    .mode button.on.live { background: var(--ok-soft); color: var(--ok); }
+    .stat .label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .stat .value { font-size: 1.5rem; font-weight: 800; margin-top: 4px; }
+    .chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 8px; }
+    .chart .bar { flex: 1; background: var(--brand); border-radius: 3px 3px 0 0; min-height: 2px; opacity: 0.85; position: relative; }
+    .chart .bar:hover { opacity: 1; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filters input, .filters select { width: auto; min-width: 140px; }
+    .preview { border: 1px dashed var(--border); border-radius: 8px; padding: 18px; text-align: center; background: #fafafa; }
+    .menu-btn { display: none; }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: fixed; z-index: 100; width: 240px; transform: translateX(-100%); transition: transform 0.2s; box-shadow: var(--shadow); }
+      .side.open { transform: none; }
+      .main { padding: 0 14px 40px; }
+      .menu-btn { display: inline-flex; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="side" id="side">
+      <a class="logo" href="/"><span class="mark">BT</span>BayarTerus</a>
+      <a class="nav" href="#ringkasan">📊 Ringkasan</a>
+      <a class="nav" href="#transaksi">💳 Transaksi</a>
+      <a class="nav" href="#pautan">🔗 Pautan Bayaran</a>
+      <a class="nav" href="#pelanggan">👥 Pelanggan</a>
+      <a class="nav" href="#baki">🏦 Baki &amp; Payout</a>
+      <a class="nav" href="#integrasi">📋 Integrasi (Copy Config)</a>
+      <a class="nav" href="#webhook">🔔 Webhook</a>
+      <a class="nav" href="#kunci">🔑 Kunci API</a>
+      <a class="nav" href="#tetapan">⚙️ Tetapan</a>
+      <a class="nav" href="/docs" target="_blank">📖 Dokumentasi</a>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <button class="btn secondary sm menu-btn" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
+        <strong id="bizName"></strong>
+        <span class="spacer"></span>
+        <div class="mode" id="modeToggle">
+          <button data-mode="test" class="test">Ujian</button>
+          <button data-mode="live" class="live">Live</button>
+        </div>
+        <button class="btn secondary sm" id="logout">Log keluar</button>
+      </div>
+      <div id="liveWarn" class="alert warn hidden">Pemproses live belum dikonfigurasi pada pelayan ini — pembayaran live akan ditolak sehingga pentadbir menyambungkan acquirer berlesen (lihat README).</div>
+      <div id="view"></div>
+    </div>
+  </div>
+  <div id="modalRoot"></div>
+  <script src="/js/common.js"></script>
+  <script src="/js/snippets.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

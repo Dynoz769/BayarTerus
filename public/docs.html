@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dokumentasi — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .docs { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+    .toc { position: sticky; top: 16px; align-self: start; font-size: 0.9rem; }
+    .toc a { display: block; padding: 4px 0; color: var(--muted); text-decoration: none; }
+    .toc a:hover { color: var(--brand); }
+    section { margin-bottom: 40px; scroll-margin-top: 16px; }
+    section h2 { border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    @media (max-width: 800px) { .docs { grid-template-columns: 1fr; } .toc { position: static; } }
+  </style>
+</head>
+<body>
+  <nav class="topnav"><div class="inner">
+    <a class="logo" href="/"><span class="mark">BT</span>BayarTerus</a>
+    <span class="muted">Dokumentasi</span>
+    <span class="spacer"></span>
+    <a class="link" href="/demo">Demo</a>
+    <a class="btn sm" href="/dashboard">Dashboard</a>
+  </div></nav>
+  <div class="container docs">
+    <nav class="toc">
+      <a href="#mula">Mula pantas</a>
+      <a href="#butang">Butang bayar</a>
+      <a href="#pautan">Pautan bayaran</a>
+      <a href="#borang">Borang amaun bebas</a>
+      <a href="#js">JavaScript API</a>
+      <a href="#api">API pelayan</a>
+      <a href="#endpoints">Senarai endpoint</a>
+      <a href="#webhook">Webhook</a>
+      <a href="#return">return_url</a>
+      <a href="#ujian">Mod ujian</a>
+      <a href="#status">Status bayaran</a>
+      <a href="#keselamatan">Keselamatan</a>
+    </nav>
+    <main id="docs"></main>
+  </div>
+  <script src="/js/common.js"></script>
+  <script src="/js/snippets.js"></script>
+  <script>
+    const base = location.origin;
+    const pk = 'pk_test_KUNCI_AWAM_ANDA';
+    const c = BT.codeBlock;
+    document.getElementById('docs').innerHTML = `
+<section id="mula"><h1>Mula pantas</h1>
+<ol>
+  <li><a href="/register">Daftar akaun</a> — anda terus dapat kunci <strong>ujian</strong> dan <strong>live</strong>.</li>
+  <li>Buka <a href="/dashboard#integrasi">Dashboard → Integrasi</a>. Snippet di sana sudah mengandungi kunci anda.</li>
+  <li>Salin dan tampal ke laman web anda. Siap!</li>
+</ol>
+<p>Terdapat dua jenis kunci:</p>
+<ul>
+  <li><code>pk_test_…</code> / <code>pk_live_…</code> — <strong>kunci awam</strong>, selamat diletak dalam HTML.</li>
+  <li><code>sk_test_…</code> / <code>sk_live_…</code> — <strong>kunci rahsia</strong>, untuk pelayan anda sahaja.</li>
+</ul></section>
+
+<section id="butang"><h2>Butang bayar (copy-paste)</h2>
+<p>Cara paling mudah. Tiada kod pelayan diperlukan. Klik butang akan membuka popup checkout di atas laman anda.</p>
+${c(Snippets.button({ base, pk }))}
+<table><thead><tr><th>Atribut</th><th>Keterangan</th></tr></thead><tbody>
+<tr><td><code>data-amount</code></td><td>Amaun dalam RM, cth. <code>25.00</code></td></tr>
+<tr><td><code>data-description</code></td><td>Keterangan dipapar kepada pelanggan</td></tr>
+<tr><td><code>data-reference</code></td><td>ID pesanan anda (dipulangkan dalam webhook)</td></tr>
+<tr><td><code>data-email</code>, <code>data-name</code>, <code>data-phone</code></td><td>Isi awal maklumat pelanggan</td></tr>
+<tr><td><code>data-link</code></td><td>ID pautan bayaran (amaun ditetapkan di pelayan)</td></tr>
+<tr><td><code>data-return-url</code></td><td>Redirect ke URL ini selepas bayar (dengan parameter bertandatangan)</td></tr>
+<tr><td><code>data-redirect="true"</code></td><td>Buka checkout halaman penuh, bukan popup</td></tr>
+</tbody></table></section>
+
+<section id="pautan"><h2>Pautan bayaran</h2>
+<p>Cipta di dashboard. Kongsi URL <code>${base}/l/plink_…</code> terus di WhatsApp / Instagram, atau benamkan sebagai butang. Amaun disimpan di pelayan, jadi tidak boleh diubah oleh pelanggan.</p>
+${c(Snippets.link({ base, pk, linkId: 'plink_XXXXXXXX' }))}</section>
+
+<section id="borang"><h2>Borang amaun bebas</h2>
+<p>Untuk sumbangan / yuran. Medan <code>amount</code>, <code>email</code>, <code>name</code>, <code>phone</code>, <code>description</code>, <code>reference</code> dibaca automatik.</p>
+${c(Snippets.form({ base, pk }))}</section>
+
+<section id="js"><h2>JavaScript API</h2>
+<p><code>BayarTerus.pay(options)</code> memulangkan Promise dengan <code>{ status, payment_id }</code>. Status: <code>succeeded</code>, <code>closed</code> atau <code>redirected</code>.</p>
+${c(Snippets.jsApi({ base, pk }))}</section>
+
+<section id="api"><h2>API pelayan</h2>
+<p>Base URL: <code>${base}/v1</code>. Sahkan dengan <code>Authorization: Bearer sk_test_…</code>. Semua amaun dalam RM sebagai string (<code>"49.90"</code>); medan <code>amount_cents</code> turut disediakan.</p>
+<p>Hantar header <code>Idempotency-Key</code> pada <code>POST /v1/payments</code> supaya permintaan berulang (cth. selepas timeout) tidak mencipta bayaran berganda.</p>
+<h3>cURL</h3>${c(Snippets.curl({ base }))}
+<h3>Node.js</h3>${c(Snippets.node({ base }))}
+<h3>PHP</h3>${c(Snippets.php({ base }))}
+<h3>Contoh respons</h3>${c(JSON.stringify({ id: 'pay_8Hk2…', object: 'payment', livemode: false, status: 'pending', amount: '49.90', amount_cents: 4990, currency: 'MYR', description: 'Pesanan #1001', reference: 'ORDER-1001', customer: { id: null, email: 'pelanggan@contoh.com', name: 'Ali', phone: null }, payment_method: null, fee: '0.00', net: '0.00', amount_refunded: '0.00', metadata: { order_id: '1001' }, checkout_url: `${base}/pay/pay_8Hk2…`, expires_at: 1767225600, paid_at: null, created: 1767222000 }, null, 2))}
+<h3>Ralat</h3>${c(JSON.stringify({ error: { code: 'invalid_request', message: 'Amaun minimum ialah RM1.00.', param: 'amount' } }, null, 2))}</section>
+
+<section id="endpoints"><h2>Senarai endpoint</h2>
+<table><tbody>
+<tr><td><code>POST /v1/payments</code></td><td>Cipta bayaran → <code>checkout_url</code></td></tr>
+<tr><td><code>GET /v1/payments</code></td><td>Senarai (<code>status</code>, <code>reference</code>, <code>limit</code>, <code>starting_after</code>)</td></tr>
+<tr><td><code>GET /v1/payments/:id</code></td><td>Dapatkan satu bayaran</td></tr>
+<tr><td><code>POST /v1/payments/:id/cancel</code></td><td>Batalkan bayaran belum dibayar</td></tr>
+<tr><td><code>POST /v1/payments/:id/refunds</code></td><td>Refund penuh atau separa (<code>amount</code>, <code>reason</code>)</td></tr>
+<tr><td><code>GET /v1/payments/:id/refunds</code>, <code>GET /v1/refunds</code></td><td>Senarai refund</td></tr>
+<tr><td><code>POST /v1/payment_links</code>, <code>GET /v1/payment_links[/:id]</code></td><td>Pautan bayaran</td></tr>
+<tr><td><code>GET /v1/customers</code></td><td>Senarai pelanggan</td></tr>
+<tr><td><code>GET /v1/balance</code></td><td>Baki tersedia &amp; tertunda</td></tr>
+<tr><td><code>POST /v1/payouts</code>, <code>GET /v1/payouts</code></td><td>Keluarkan dana ke bank</td></tr>
+<tr><td><code>GET /v1/events[/:id]</code></td><td>Log event (sama seperti webhook)</td></tr>
+</tbody></table></section>
+
+<section id="webhook"><h2>Webhook</h2>
+<p>Tetapkan URL di Dashboard → Webhook. Setiap permintaan mengandungi header <code>BayarTerus-Signature: t=&lt;timestamp&gt;,v1=&lt;hmac&gt;</code> di mana <code>v1 = HMAC_SHA256(rahsia_webhook, t + "." + body)</code>. Balas dengan HTTP 2xx dalam 10 saat; jika tidak, kami cuba semula sehingga 6 kali.</p>
+<p>Event: <code>payment.created</code>, <code>payment.succeeded</code>, <code>payment.failed</code>, <code>payment.cancelled</code>, <code>payment.expired</code>, <code>refund.succeeded</code>, <code>payout.created</code>, <code>ping</code>.</p>
+${c(JSON.stringify({ id: 'evt_…', object: 'event', type: 'payment.succeeded', livemode: false, created: 1767222100, data: { object: { id: 'pay_…', status: 'succeeded', amount: '49.90', reference: 'ORDER-1001', '…': '…' } } }, null, 2))}
+<h3>Node.js</h3>${c(Snippets.webhookNode({}))}
+<h3>PHP</h3>${c(Snippets.webhookPhp({}))}</section>
+
+<section id="return"><h2>return_url</h2>
+<p>Selepas bayar, pelanggan dihantar ke <code>return_url?payment_id=…&amp;status=…&amp;amount=…&amp;reference=…&amp;signature=…</code>. <code>signature = HMAC_SHA256(rahsia_webhook, "payment_id|status|amount|reference")</code>. Gunakan untuk paparan sahaja — webhook ialah sumber kebenaran.</p>
+${c(Snippets.returnVerify({}))}</section>
+
+<section id="ujian"><h2>Mod ujian</h2>
+<p>Kunci <code>_test_</code> menggunakan simulator — tiada wang sebenar.</p>
+<table><tbody>
+<tr><td><code>4242 4242 4242 4242</code></td><td>Visa — berjaya</td></tr>
+<tr><td><code>5555 5555 5555 4444</code></td><td>Mastercard — berjaya</td></tr>
+<tr><td><code>4000 0000 0000 0002</code></td><td>Ditolak</td></tr>
+<tr><td><code>4000 0000 0000 9995</code></td><td>Baki tidak mencukupi</td></tr>
+<tr><td><code>4000 0000 0000 0069</code></td><td>Kad tamat tempoh</td></tr>
+</tbody></table>
+<p>FPX, e-dompet dan DuitNow QR membuka halaman bank simulasi di mana anda boleh pilih "Luluskan" atau "Tolak".</p></section>
+
+<section id="status"><h2>Status bayaran</h2>
+<table><tbody>
+<tr><td>${BT.badge('pending')}</td><td>Menunggu pelanggan</td></tr>
+<tr><td>${BT.badge('processing')}</td><td>Pelanggan di halaman bank / e-dompet</td></tr>
+<tr><td>${BT.badge('succeeded')}</td><td>Berjaya — penuhi pesanan</td></tr>
+<tr><td>${BT.badge('failed')}</td><td>Cubaan gagal; pelanggan boleh cuba lagi sehingga tamat tempoh</td></tr>
+<tr><td>${BT.badge('expired')}</td><td>Tidak dibayar dalam 60 minit</td></tr>
+<tr><td>${BT.badge('cancelled')}</td><td>Dibatalkan oleh merchant</td></tr>
+<tr><td>${BT.badge('partially_refunded')} ${BT.badge('refunded')}</td><td>Refund separa / penuh</td></tr>
+</tbody></table></section>
+
+<section id="keselamatan"><h2>Keselamatan</h2>
+<ul>
+<li><strong>Jangan percaya pelayar.</strong> Amaun daripada <code>data-amount</code> boleh diubah oleh pelanggan. Sebelum hantar barang, sahkan amaun &amp; <code>reference</code> melalui webhook atau <code>GET /v1/payments/:id</code>.</li>
+<li>Untuk keselamatan maksimum: matikan "amaun dari pelayar" dalam Tetapan dan gunakan pautan bayaran atau API pelayan.</li>
+<li>Tetapkan <strong>domain dibenarkan</strong> supaya kunci awam anda tidak boleh digunakan di laman lain.</li>
+<li>Simpan kunci rahsia dalam pembolehubah persekitaran, bukan dalam repo kod.</li>
+<li>Sahkan tandatangan webhook dan tolak timestamp lebih 5 minit.</li>
+</ul></section>`;
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<!--
+  Contoh laman merchant paling ringkas. Tukar GATEWAY dan pk_test_xxx
+  kepada nilai dari Dashboard → Integrasi, kemudian buka fail ini dalam pelayar.
+-->
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <title>Kedai Saya</title>
+</head>
+<body>
+  <h1>Kedai Saya</h1>
+
+  <p>Kek Coklat — RM45.00</p>
+  <button data-bayarterus data-amount="45.00" data-description="Kek Coklat" data-reference="ORDER-123">
+    Beli sekarang
+  </button>
+
+  <h2>Sumbangan</h2>
+  <form data-bayarterus data-description="Sumbangan">
+    <input name="email" type="email" placeholder="Emel" required>
+    <input name="amount" placeholder="Amaun (RM)" required>
+    <button type="submit">Sumbang</button>
+  </form>
+
+  <script src="http://localhost:3000/js/bayarterus.js" data-key="pk_test_xxx"></script>
+  <script>
+    document.addEventListener('bayarterus:success', function (e) {
+      alert('Terima kasih! ID bayaran: ' + e.detail.payment_id);
+    });
+  </script>
+</body>
+</html>

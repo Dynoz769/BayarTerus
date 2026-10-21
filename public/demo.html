@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo Kedai — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .product .img { height: 120px; border-radius: 8px; display: grid; place-items: center; font-size: 48px; background: #f3f4f6; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <nav class="topnav"><div class="inner">
+    <a class="logo" href="/"><span class="mark">BT</span>BayarTerus</a>
+    <span class="muted">Demo kedai</span>
+    <span class="spacer"></span>
+    <a class="link" href="/docs">Dokumentasi</a>
+  </div></nav>
+  <main class="container">
+    <div class="card" id="setup">
+      <h2>Cuba dengan kunci anda</h2>
+      <p class="muted">Halaman ini mensimulasikan laman web merchant yang menggunakan snippet copy-paste. Masukkan kunci awam <strong>ujian</strong> dari Dashboard → Kunci API.</p>
+      <form id="keyForm" class="row"><input name="key" id="key" placeholder="pk_test_..." style="max-width:360px" required><button class="btn">Guna kunci</button></form>
+    </div>
+    <div id="shop" class="hidden" style="margin-top:20px">
+      <div class="row" style="margin-bottom:16px"><h1 style="margin:0">Kedai Kek Mak Jah 🍰</h1><span class="spacer"></span><button class="btn ghost sm" id="reset">Tukar kunci</button></div>
+      <div id="result" class="alert ok hidden"></div>
+      <div class="products">
+        <div class="card product"><div class="img">🎂</div><h3>Kek Coklat Moist</h3><p class="muted">RM45.00</p>
+          <button class="btn block" data-bayarterus data-amount="45.00" data-description="Kek Coklat Moist" data-reference="DEMO-001">Beli sekarang</button></div>
+        <div class="card product"><div class="img">🍪</div><h3>Biskut Raya (1 balang)</h3><p class="muted">RM18.50</p>
+          <button class="btn block" data-bayarterus data-amount="18.50" data-description="Biskut Raya" data-reference="DEMO-002">Beli sekarang</button></div>
+        <div class="card product"><div class="img">🥧</div><h3>Tart Nenas (50 biji)</h3><p class="muted">RM30.00 — halaman penuh</p>
+          <button class="btn block secondary" data-bayarterus data-amount="30.00" data-description="Tart Nenas" data-redirect="true" data-return-url="">Beli (redirect)</button></div>
+        <div class="card product"><div class="img">💝</div><h3>Sumbangan</h3>
+          <form data-bayarterus data-description="Sumbangan kedai">
+            <div class="field"><input name="amount" placeholder="Amaun (RM)" inputmode="decimal" required></div>
+            <div class="field"><input name="email" type="email" placeholder="Emel" required></div>
+            <button class="btn block" type="submit">Sumbang</button>
+          </form></div>
+      </div>
+      <h2 style="margin-top:32px">Kod yang digunakan halaman ini</h2>
+      <div id="code"></div>
+    </div>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/snippets.js"></script>
+  <script>
+    (function () {
+      const $ = (s) => document.querySelector(s);
+      const params = new URLSearchParams(location.search);
+      let key = params.get('key');
+      try { key = key || localStorage.getItem('bt_demo_key'); } catch {}
+
+      if (params.get('payment_id')) {
+        $('#result').textContent = `Kembali dari checkout: ${params.get('payment_id')} — status ${params.get('status')} (RM${params.get('amount')}).`;
+        $('#result').classList.remove('hidden');
+      }
+
+      function start(k) {
+        try { localStorage.setItem('bt_demo_key', k); } catch {}
+        $('#setup').classList.add('hidden');
+        $('#shop').classList.remove('hidden');
+        document.querySelector('[data-return-url]').setAttribute('data-return-url', `${location.origin}/demo`);
+        $('#code').innerHTML = BT.codeBlock(Snippets.button({ base: location.origin, pk: k, amount: '45.00', description: 'Kek Coklat Moist', label: 'Beli sekarang', reference: 'DEMO-001' }));
+        const s = document.createElement('script');
+        s.src = '/js/bayarterus.js';
+        s.dataset.key = k;
+        document.body.appendChild(s);
+      }
+
+      document.addEventListener('bayarterus:success', (e) => {
+        $('#result').textContent = `Terima kasih! Bayaran ${e.detail.payment_id} berjaya (RM${e.detail.amount}).`;
+        $('#result').classList.remove('hidden');
+      });
+
+      $('#keyForm').onsubmit = (e) => { e.preventDefault(); start($('#key').value.trim()); };
+      $('#reset').onclick = () => { try { localStorage.removeItem('bt_demo_key'); } catch {} location.href = '/demo'; };
+      if (key) start(key);
+    })();
+  </script>
+</body>
+</html>

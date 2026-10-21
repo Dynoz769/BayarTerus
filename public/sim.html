@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bank Simulasi — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    body { background: #1e293b; }
+    .box { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 14px; overflow: hidden; }
+    .bar { background: #fbbf24; color: #78350f; font-weight: 700; padding: 8px 16px; font-size: 0.8rem; text-align: center; }
+    .inner { padding: 22px; }
+    .qr { width: 180px; height: 180px; margin: 10px auto 16px; display: block; image-rendering: pixelated; border: 8px solid #fff; outline: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="bar">SIMULATOR MOD UJIAN — bukan bank sebenar</div>
+    <div class="inner">
+      <h2 id="title">Memuatkan…</h2>
+      <div id="error" class="alert error hidden"></div>
+      <div id="content" class="hidden">
+        <svg id="qr" class="qr hidden" viewBox="0 0 25 25"></svg>
+        <dl class="kv" style="grid-template-columns:110px 1fr;margin-bottom:18px">
+          <dt>Penerima</dt><dd id="merchant"></dd>
+          <dt>Amaun</dt><dd id="amount" style="font-weight:700"></dd>
+          <dt>Rujukan</dt><dd id="ref" class="mono small"></dd>
+        </dl>
+        <p class="muted small" id="note"></p>
+        <div class="grid" style="gap:8px">
+          <button class="btn" id="approve">Luluskan pembayaran</button>
+          <button class="btn secondary" id="decline">Tolak / batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script>
+    (function () {
+      const id = location.pathname.split('/').pop();
+      const qs = location.search;
+      const $ = (s) => document.querySelector(s);
+      const back = () => (location.href = `/pay/${encodeURIComponent(id)}${qs}`);
+
+      // Corak QR palsu (bukan QR sebenar) supaya simulasi DuitNow nampak realistik.
+      function fakeQr(seed) {
+        let h = 0;
+        for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+        let out = '';
+        const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#fff"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`;
+        for (let y = 0; y < 25; y++)
+          for (let x = 0; x < 25; x++) {
+            if ((x < 8 && y < 8) || (x > 16 && y < 8) || (x < 8 && y > 16)) continue;
+            h = (h * 1103515245 + 12345) >>> 0;
+            if (h & 0x10000) out += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+          }
+        return out + finder(0, 0) + finder(18, 0) + finder(0, 18);
+      }
+
+      async function load() {
+        try {
+          const p = await BT.api(`/checkout/api/payments/${id}`);
+          if (p.status !== 'processing') return back();
+          const m = p.payment_method;
+          $('#title').textContent = m.type === 'duitnow_qr' ? 'DuitNow QR' : m.detail;
+          $('#merchant').textContent = p.merchant.name;
+          $('#amount').textContent = BT.money(p.amount);
+          $('#ref').textContent = p.id;
+          if (m.type === 'duitnow_qr') {
+            $('#qr').innerHTML = fakeQr(p.id);
+            $('#qr').classList.remove('hidden');
+            $('#note').textContent = 'Dalam mod live, pelanggan mengimbas QR ini. Di sini anda boleh mensimulasikan keputusan.';
+          } else {
+            $('#note').textContent = 'Dalam mod live, pelanggan log masuk ke perbankan internet / e-dompet di sini.';
+          }
+          $('#content').classList.remove('hidden');
+        } catch (e) {
+          $('#title').textContent = 'Ralat';
+          $('#error').textContent = e.message;
+          $('#error').classList.remove('hidden');
+        }
+      }
+
+      async function decide(approve) {
+        document.querySelectorAll('button').forEach((b) => (b.disabled = true));
+        try {
+          await BT.api(`/checkout/api/payments/${id}/simulate`, { method: 'POST', body: { approve } });
+        } catch (e) {}
+        back();
+      }
+      $('#approve').onclick = () => decide(true);
+      $('#decline').onclick = () => decide(false);
+      load();
+    })();
+  </script>
+</body>
+</html>

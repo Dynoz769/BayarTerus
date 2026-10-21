@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pembayaran — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    body { background: #eef1f4; }
+    body.embed { background: #fff; }
+    .co { max-width: 440px; margin: 32px auto; padding: 0 12px; }
+    body.embed .co { margin: 0 auto; padding: 0; }
+    .co-card { background: #fff; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    body.embed .co-card { box-shadow: none; border-radius: 0; }
+    .co-head { background: var(--brand); color: #fff; padding: 22px 22px 18px; }
+    .co-head .merchant { font-weight: 600; opacity: 0.95; }
+    .co-head .amount { font-size: 2rem; font-weight: 800; margin: 6px 0 2px; }
+    .co-head .desc { opacity: 0.9; font-size: 0.9rem; }
+    .co-body { padding: 20px 22px 24px; }
+    .methods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
+    .methods button { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 9px 4px; font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text); }
+    .methods button.active { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-dark); }
+    .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .bank-grid label { font-weight: 500; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; display: flex; gap: 8px; align-items: center; cursor: pointer; margin: 0; }
+    .bank-grid input { width: auto; }
+    .bank-grid label:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+    .two { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .result { text-align: center; padding: 10px 0; }
+    .result .icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 12px; font-size: 32px; color: #fff; }
+    .result .icon.ok { background: var(--ok); }
+    .result .icon.bad { background: var(--danger); }
+    .foot { text-align: center; font-size: 0.75rem; color: var(--muted); padding: 14px; }
+    .testbar { background: var(--warn-soft); color: var(--warn); text-align: center; font-size: 0.8rem; font-weight: 600; padding: 6px; }
+  </style>
+</head>
+<body>
+  <div class="co">
+    <div class="co-card">
+      <div id="testbar" class="testbar hidden">MOD UJIAN — tiada wang sebenar akan ditolak</div>
+      <div class="co-head" id="head">
+        <div class="merchant" id="merchant">Memuatkan…</div>
+        <div class="amount" id="amount">&nbsp;</div>
+        <div class="desc" id="desc"></div>
+      </div>
+      <div class="co-body">
+        <div id="error" class="alert error hidden"></div>
+
+        <form id="payForm" class="hidden" autocomplete="on">
+          <div class="field">
+            <label for="email">Emel (untuk resit)</label>
+            <input id="email" name="email" type="email" required placeholder="anda@contoh.com">
+          </div>
+          <div class="methods" id="methods">
+            <button type="button" data-m="fpx">FPX</button>
+            <button type="button" data-m="card">Kad</button>
+            <button type="button" data-m="ewallet">E-Dompet</button>
+            <button type="button" data-m="duitnow_qr">DuitNow QR</button>
+          </div>
+
+          <div data-panel="card" class="hidden">
+            <div class="field">
+              <label for="card_number">Nombor kad</label>
+              <input id="card_number" name="card_number" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242">
+            </div>
+            <div class="two">
+              <div class="field"><label for="exp_month">Bulan</label><input id="exp_month" name="exp_month" inputmode="numeric" placeholder="MM" maxlength="2" autocomplete="cc-exp-month"></div>
+              <div class="field"><label for="exp_year">Tahun</label><input id="exp_year" name="exp_year" inputmode="numeric" placeholder="YY" maxlength="4" autocomplete="cc-exp-year"></div>
+              <div class="field"><label for="cvc">CVC</label><input id="cvc" name="cvc" inputmode="numeric" placeholder="123" maxlength="4" autocomplete="cc-csc"></div>
+            </div>
+            <div class="field"><label for="name">Nama pada kad</label><input id="name" name="name" autocomplete="cc-name"></div>
+            <div id="testCards" class="hint hidden">Kad ujian: <code>4242 4242 4242 4242</code> (berjaya), <code>4000 0000 0000 0002</code> (ditolak), <code>4000 0000 0000 9995</code> (baki tak cukup). Tarikh masa depan, CVC apa-apa.</div>
+          </div>
+          <div data-panel="fpx" class="hidden"><div class="field"><label>Pilih bank</label><div class="bank-grid" id="banks"></div></div></div>
+          <div data-panel="ewallet" class="hidden"><div class="field"><label>Pilih e-dompet</label><div class="bank-grid" id="wallets"></div></div></div>
+          <div data-panel="duitnow_qr" class="hidden"><p class="muted small">Kod QR DuitNow akan dipaparkan. Imbas dengan mana-mana aplikasi bank atau e-dompet.</p></div>
+
+          <button class="btn block" id="payBtn" type="submit" style="margin-top:8px">Bayar</button>
+          <div class="row" style="justify-content:center;margin-top:10px">
+            <button type="button" class="btn ghost sm hidden" id="cancelBtn">Batal &amp; kembali ke kedai</button>
+          </div>
+        </form>
+
+        <div id="resultView" class="result hidden"></div>
+      </div>
+    </div>
+    <div class="foot">🔒 Dilindungi oleh <strong>BayarTerus</strong></div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>

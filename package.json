@@ -1,0 +1,23 @@
+{
+  "name": "bayarterus",
+  "version": "1.0.0",
+  "description": "BayarTerus — payment gateway untuk merchant: API, hosted checkout, embed copy-paste, webhook, refund, payout.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dynoz769/BayarTerus.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

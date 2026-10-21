@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar — BayarTerus</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="narrow" style="max-width:480px">
+    <a class="logo" href="/" style="justify-content:center;margin-bottom:20px"><span class="mark">BT</span>BayarTerus</a>
+    <div class="card" id="formCard">
+      <h1>Daftar akaun merchant</h1>
+      <div id="error" class="alert error hidden"></div>
+      <form id="form">
+        <div class="field"><label for="business_name">Nama perniagaan</label><input id="business_name" name="business_name" required></div>
+        <div class="field"><label for="email">Emel</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="password">Kata laluan</label><input id="password" name="password" type="password" minlength="8" required autocomplete="new-password"><div class="hint">Minimum 8 aksara.</div></div>
+        <button class="btn block">Daftar</button>
+      </form>
+      <p class="muted small" style="margin:14px 0 0">Sudah ada akaun? <a href="/login">Log masuk</a></p>
+    </div>
+    <div class="card hidden" id="keysCard">
+      <h1>Akaun berjaya dicipta 🎉</h1>
+      <div class="alert warn">Simpan kunci rahsia ini sekarang. Ia <strong>hanya dipaparkan sekali</strong>. Jangan letak kunci rahsia dalam kod HTML/JavaScript laman anda.</div>
+      <label>Kunci rahsia (test)</label><div id="skTest"></div>
+      <label>Kunci rahsia (live)</label><div id="skLive"></div>
+      <p class="muted small">Untuk butang bayar copy-paste, anda hanya perlukan <strong>kunci awam</strong> (pk_) — ada dalam dashboard &gt; Integrasi.</p>
+      <a class="btn block" href="/dashboard#integrasi">Teruskan ke dashboard</a>
+    </div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script>
+    document.getElementById('form').onsubmit = async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('error');
+      try {
+        const out = await BT.api('/dashboard/api/auth/register', { method: 'POST', body: BT.formData(e.target) });
+        document.getElementById('skTest').innerHTML = BT.codeBlock(out.secret_keys.test);
+        document.getElementById('skLive').innerHTML = BT.codeBlock(out.secret_keys.live);
+        document.getElementById('formCard').classList.add('hidden');
+        document.getElementById('keysCard').classList.remove('hidden');
+      } catch (x) { err.textContent = x.message; err.classList.remove('hidden'); }
+    };
+  </script>
+</body>
+</html>

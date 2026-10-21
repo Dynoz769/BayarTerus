@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BayarTerus — Payment gateway untuk semua</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .hero { padding: 64px 0 40px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+    .hero h1 { font-size: 2.6rem; letter-spacing: -0.02em; }
+    .hero p.lead { font-size: 1.1rem; color: var(--muted); }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 24px 0 48px; }
+    .features .card h3 { margin-bottom: 6px; }
+    .steps { counter-reset: s; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .steps .card::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; margin-bottom: 8px; }
+    @media (max-width: 800px) { .hero { grid-template-columns: 1fr; padding-top: 32px; } .hero h1 { font-size: 2rem; } }
+  </style>
+</head>
+<body>
+  <nav class="topnav"><div class="inner">
+    <a class="logo" href="/"><span class="mark">BT</span>BayarTerus</a>
+    <span class="spacer"></span>
+    <a class="link" href="/docs">Dokumentasi</a>
+    <a class="link" href="/demo">Demo</a>
+    <a class="link" href="/login">Log masuk</a>
+    <a class="btn sm" href="/register">Daftar percuma</a>
+  </div></nav>
+  <main class="container">
+    <section class="hero">
+      <div>
+        <h1>Terima bayaran di laman anda dengan satu salinan kod.</h1>
+        <p class="lead">FPX, kad, e-dompet dan DuitNow QR — semua melalui satu gateway. Salin snippet, tampal ke laman web anda, siap.</p>
+        <div class="row"><a class="btn" href="/register">Mula sekarang</a><a class="btn secondary" href="/docs">Lihat cara integrasi</a></div>
+      </div>
+      <div id="snippet"></div>
+    </section>
+
+    <h2>Cara ia berfungsi</h2>
+    <div class="steps" style="margin-bottom:48px">
+      <div class="card"><h3>Daftar akaun</h3><p class="muted">Dapatkan kunci API mod ujian serta-merta.</p></div>
+      <div class="card"><h3>Salin config</h3><p class="muted">Dashboard menjana snippet lengkap dengan kunci anda.</p></div>
+      <div class="card"><h3>Tampal di laman</h3><p class="muted">HTML biasa, WordPress, Shopify custom page, React — semua boleh.</p></div>
+      <div class="card"><h3>Terima duit</h3><p class="muted">Webhook memaklumkan sistem anda; baki boleh dikeluarkan ke bank.</p></div>
+    </div>
+
+    <h2>Fungsi utama</h2>
+    <div class="features">
+      <div class="card"><h3>💳 Pelbagai kaedah bayaran</h3><p class="muted">FPX (13 bank), kad Visa/Mastercard, Touch 'n Go, GrabPay, Boost, ShopeePay dan DuitNow QR.</p></div>
+      <div class="card"><h3>📋 Embed copy-paste</h3><p class="muted">Butang bayar, borang amaun dan popup checkout tanpa perlu kod pelayan.</p></div>
+      <div class="card"><h3>🔗 Pautan bayaran</h3><p class="muted">Kongsi pautan melalui WhatsApp/Instagram. Amaun tetap atau pelanggan tentukan.</p></div>
+      <div class="card"><h3>🔔 Webhook bertandatangan</h3><p class="muted">HMAC-SHA256, cubaan semula automatik, log penghantaran dan hantar semula.</p></div>
+      <div class="card"><h3>↩️ Refund penuh &amp; separa</h3><p class="muted">Dari dashboard atau API.</p></div>
+      <div class="card"><h3>🏦 Baki &amp; payout</h3><p class="muted">Lihat baki tersedia/tertunda dan keluarkan dana ke akaun bank.</p></div>
+      <div class="card"><h3>📊 Laporan</h3><p class="muted">Statistik jualan, kadar kejayaan, carian transaksi dan eksport CSV.</p></div>
+      <div class="card"><h3>🧪 Mod ujian &amp; live</h3><p class="muted">Kunci berasingan, kad ujian dan bank simulasi untuk menguji tanpa risiko.</p></div>
+      <div class="card"><h3>🛡️ Keselamatan</h3><p class="muted">Sekatan domain, idempotency key, had kadar, URL kembali bertandatangan.</p></div>
+    </div>
+  </main>
+  <script src="/js/common.js"></script>
+  <script>
+    document.getElementById('snippet').innerHTML = BT.codeBlock(
+`<script src="${location.origin}/js/bayarterus.js"
+        data-key="pk_test_KUNCI_ANDA"><\/script>
+
+<button data-bayarterus
+        data-amount="25.00"
+        data-description="Kek Coklat">
+  Bayar RM25
+</button>`);
+  </script>
+</body>
+</html>
